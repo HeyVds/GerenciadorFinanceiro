@@ -1,44 +1,53 @@
-/* login.html específico (junto com style.css) */
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #2c3e50, #4ca1af);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
 
 .container {
-  max-width: 400px;
-  margin: 50px auto;
-  background-color: #fff;
-  padding: 25px;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 30px 40px;
   border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  max-width: 400px;
   text-align: center;
 }
 
 h2 {
   margin-bottom: 15px;
-  color: #2c3e50;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
 }
 
 form {
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 input {
   width: 100%;
   padding: 10px;
-  margin: 6px 0;
-  border: 1px solid #ccc;
+  margin: 8px 0;
+  border: none;
   border-radius: 5px;
 }
 
 button {
-  width: 100%;
-  padding: 10px;
-  background-color: #3498db;
-  color: #fff;
+  background-color: #27ae60;
+  color: white;
   border: none;
-  border-radius: 5px;
+  padding: 10px 20px;
   margin-top: 10px;
-  transition: background-color 0.3s;
+  border-radius: 5px;
+  cursor: pointer;
   font-weight: bold;
 }
 
 button:hover {
-  background-color: #2980b9;
+  background-color: #219150;
 }
