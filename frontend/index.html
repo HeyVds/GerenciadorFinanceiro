@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Finanças</title>
+
+  
+  <link rel="stylesheet" href="styles/style.css" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Script principal -->
+  <script src="scripts/main.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Minhas Finanças</h1>
+    <button id="logoutBtn">Sair</button>
+
+    <section>
+      <h2>Novo Lançamento</h2>
+      <form id="formLancamento">
+        <select id="tipo">
+          <option value="entrada">Entrada</option>
+          <option value="saida">Saída</option>
+        </select>
+        <input type="number" step="0.01" id="valor" placeholder="Valor" required />
+        <input type="text" id="categoria" placeholder="Categoria" required />
+        <input type="text" id="descricao" placeholder="Descrição" />
+        <input type="date" id="data" required />
+        <button type="submit">Registrar</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Filtros</h2>
+      <select id="filtroTipo">
+        <option value="">Todos</option>
+        <option value="entrada">Entrada</option>
+        <option value="saida">Saída</option>
+      </select>
+      <input type="text" id="filtroCategoria" placeholder="Categoria" />
+      <input type="month" id="filtroMes" />
+      <button id="btnFiltrar">Filtrar</button>
+    </section>
+
+    <section>
+      <h2>Lançamentos</h2>
+      <ul id="listaLancamentos"></ul>
+    </section>
+
+    <section>
+      <h2>Resumo</h2>
+      <p>Entradas: R$ <span id="totalEntradas">0.00</span></p>
+      <p>Saídas: R$ <span id="totalSaidas">0.00</span></p>
+      <p>Saldo: R$ <span id="saldoAtual">0.00</span></p>
+    </section>
+
+    <section>
+      <h2>Gráficos</h2>
+      <canvas id="graficoPizza"></canvas>
+      <canvas id="graficoBarras"></canvas>
+    </section>
+  </div>
+</body>
+</html>
