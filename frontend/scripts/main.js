@@ -61,11 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function atualizarGraficos(lancamentosParaGraficos = lancamentos) {
     const categorias = {};
-    lancamentosParaGraficos.forEach(lanc => {
-      if (lanc.tipo === 'saida') {
-        categorias[lanc.categoria] = (categorias[lanc.categoria] || 0) + lanc.valor;
-      }
-    });
+    lancamentosParaGraficos.forEach(lancamento => {
+    const chave = `${lancamento.tipo} - ${lancamento.categoria}`;
+    categorias[chave] = (categorias[chave] || 0) + lancamento.valor;
+});
 
     const categoriasLabels = Object.keys(categorias);
     const categoriasData = Object.values(categorias);
