@@ -2,13 +2,13 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-// Verifica se a pasta db existe, se não, cria
+// Cria a pasta 'db' se não existir
 const dbPath = path.join(__dirname, 'db');
 if (!fs.existsSync(dbPath)) {
   fs.mkdirSync(dbPath);
 }
 
-// Conecta/cria o banco
+// Cria ou abre o banco
 const db = new sqlite3.Database(path.join(dbPath, 'banco.db'), (err) => {
   if (err) {
     console.error('Erro ao conectar ao banco:', err.message);
@@ -33,8 +33,6 @@ db.serialize(() => {
       console.log('Tabela "usuarios" criada com sucesso.');
     }
   });
-
-  // Se quiser criar outras tabelas no futuro, adicione aqui
 });
 
 db.close();
