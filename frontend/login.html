@@ -2,29 +2,84 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - Finanças Pessoais</title>
-  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="/styles/style.css">
 </head>
-
 <body>
   <div class="container">
     <h2>Login</h2>
     <form id="loginFormulario">
-      <input type="email" id="emailLogin" placeholder="Email" required /><br />
-      <input type="password" id="senhaLogin" placeholder="Senha" required /><br />
+      <input type="email" id="emailLogin" placeholder="Email" required><br>
+      <input type="password" id="senhaLogin" placeholder="Senha" required><br>
       <button type="submit">Entrar</button>
     </form>
 
     <h2>Cadastro</h2>
     <form id="registroFormulario">
-      <input type="text" id="nome" placeholder="Nome" required /><br />
-      <input type="email" id="email" placeholder="Email" required /><br />
-      <input type="password" id="senha" placeholder="Senha" required /><br />
+      <input type="text" id="nome" placeholder="Nome" required><br>
+      <input type="email" id="email" placeholder="Email" required><br>
+      <input type="password" id="senha" placeholder="Senha" required><br>
       <button type="submit">Cadastrar</button>
     </form>
   </div>
 
-  <!-- Nenhum script necessário aqui por enquanto -->
+  <script>
+    const loginFormulario = document.getElementById('loginFormulario');
+    const registroFormulario = document.getElementById('registroFormulario');
+
+    // Login
+    loginFormulario.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('emailLogin').value;
+      const senha = document.getElementById('senhaLogin').value;
+
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, senha })
+        });
+
+        if (res.ok) {
+          window.location.href = '/index.html';
+        } else {
+          alert('Login inválido');
+        }
+      } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        alert('Erro ao conectar com o servidor');
+      }
+    });
+
+    // Cadastro
+    registroFormulario.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+
+      try {
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email, senha })
+        });
+
+        if (res.ok) {
+          alert('Cadastro realizado com sucesso!');
+          registroFormulario.reset();
+        } else {
+          const data = await res.json();
+          alert(data.erro || 'Erro ao cadastrar');
+        }
+      } catch (error) {
+        console.error('Erro ao cadastrar:', error);
+        alert('Erro ao conectar com o servidor');
+      }
+    });
+  </script>
 </body>
 </html>
