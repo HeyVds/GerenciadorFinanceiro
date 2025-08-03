@@ -1,40 +1,40 @@
 const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 const fs = require('fs');
 
-// Garante que a pasta db/ existe
-const dbDir = './db';
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir);
+// Verifica se a pasta db existe, se não, cria
+const dbPath = path.join(__dirname, 'db');
+if (!fs.existsSync(dbPath)) {
+  fs.mkdirSync(dbPath);
 }
 
-const db = new sqlite3.Database('./db/banco.db');
+// Conecta/cria o banco
+const db = new sqlite3.Database(path.join(dbPath, 'banco.db'), (err) => {
+  if (err) {
+    console.error('Erro ao conectar ao banco:', err.message);
+  } else {
+    console.log('Banco criado/conectado com sucesso!');
+  }
+});
 
+// Cria tabela de usuários
 db.serialize(() => {
-  // Criação da tabela de usuários
   db.run(`
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE IF NOT EXISTS usuarios (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
+      email TEXT UNIQUE NOT NULL,
       senha TEXT NOT NULL
     )
-  `);
+  `, (err) => {
+    if (err) {
+      console.error('Erro ao criar tabela de usuários:', err.message);
+    } else {
+      console.log('Tabela "usuarios" criada com sucesso.');
+    }
+  });
 
-  // Criação da tabela de transações financeiras
-  db.run(`
-    CREATE TABLE IF NOT EXISTS "transaction" (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      tipo TEXT NOT NULL CHECK(tipo IN ('entrada', 'saida')),
-      valor REAL NOT NULL,
-      categoria TEXT NOT NULL,
-      descricao TEXT,
-      data TEXT NOT NULL,
-      FOREIGN KEY(user_id) REFERENCES users(id)
-    )
-  `);
+  // Se quiser criar outras tabelas no futuro, adicione aqui
 });
 
-db.close(() => {
-  console.log('Banco de dados criado com sucesso!');
-});
+db.close();
