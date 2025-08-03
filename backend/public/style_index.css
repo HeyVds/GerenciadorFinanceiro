@@ -1,0 +1,100 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1, h2 {
+  color: #2c3e50;
+}
+
+form, section {
+  margin-bottom: 30px;
+  background: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+input, select {
+  padding: 8px;
+  margin: 5px;
+  width: calc(100% - 12px);
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-top: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #ecf0f1;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 5px;
+  position: relative;
+}
+
+li button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background-color: #e74c3c;
+  padding: 5px 10px;
+}
+
+li button:hover {
+  background-color: #c0392b;
+}
+
+/* 🔽 Gráficos */
+
+canvas {
+  max-width: 100%;
+  margin-top: 20px;
+}
+
+#graficoPizza {
+  width: 280px;
+  height: 280px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* 🔽 Logout button */
+
+#logoutBtn {
+  float: right;
+  background-color: #e67e22;
+  margin-top: -50px;
+}
+
+#logoutBtn:hover {
+  background-color: #d35400;
+}

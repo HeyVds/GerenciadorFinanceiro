@@ -1,0 +1,62 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Finanças Pessoais</title>
+  <link rel="stylesheet" href="style_login.css">
+</head>
+<body>
+  <div class="container"> <!-- Seção de login -->
+    <h2>Login</h2>
+    <form id="loginFormulario">
+      <input type="email" id="emailLogin" placeholder="Email" required><br>
+      <input type="password" id="senhaLogin" placeholder="Senha" required><br>
+      <button type="submit">Entrar</button>
+    </form>
+
+    <h2>Cadastro</h2>
+    <form id="registroFormulario">  <!-- Seção de cadastro -->
+      <input type="text" id="nome" placeholder="Nome" required><br>
+      <input type="email" id="email" placeholder="Email" required><br>
+      <input type="password" id="senha" placeholder="Senha" required><br>
+      <button type="submit">Cadastrar</button>
+    </form>
+  </div>
+
+  <script>
+    const loginFormulario = document.getElementById('loginFormulario');
+    const registroFormulario = document.getElementById('registroFormulario');
+
+    loginFormulario.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailLogin.value,
+          senha: senhaLogin.value
+        })
+      });
+      if (res.ok) window.location.href = 'index.html';  // Se o login for bem-sucedido, redireciona para o dashboard (index.html) 
+      else alert('Login inválido'); // Exibe mensagem de erro
+    });
+
+    registroFormulario.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/register', { // Envia os dados de login para a rota /login do backend
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: nome.value,
+          email: email.value,
+          senha: senha.value
+        })
+      });
+      if (res.ok) alert('Cadastro realizado'); // Se o cadastro for bem-sucedido, exibe mensagem
+      else alert('Erro no cadastro');
+    });
+  </script>
+</body>
+</html>
