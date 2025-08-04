@@ -33,6 +33,25 @@ db.serialize(() => {
       console.log('Tabela "usuarios" criada com sucesso.');
     }
   });
+  // Cria tabela de transações
+  db.run(`
+    CREATE TABLE IF NOT EXISTS transaction (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      tipo TEXT NOT NULL CHECK(tipo IN ('entrada', 'saida')),
+      valor REAL NOT NULL CHECK(valor > 0),
+      categoria TEXT NOT NULL,
+      descricao TEXT,
+      data TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES usuarios(id)
+    )
+  `, (err) => {
+    if (err) {
+      console.error('Erro ao criar tabela de transações:', err.message);
+    } else {
+      console.log('Tabela "transaction" criada com sucesso.');
+    }
+  });
 });
 
 db.close();
