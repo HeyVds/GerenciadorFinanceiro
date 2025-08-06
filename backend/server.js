@@ -1,92 +1,48 @@
-const express = require('express');
-const session = require('express-session');
-const bcrypt = require('bcrypt');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-
-const app = express();
-const PORT = 3000;
-
-// Inicializa o banco de dados
-const db = new sqlite3.Database('./db/banco.db', (err) => {
-  if (err) {
-    console.error('Erro ao abrir o banco:', err.message);
-  } else {
-    console.log('Banco de dados conectado.');
-  }
-});
-
-// Middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(session({
-  secret: 'segredo123',
-  resave: false,
-  saveUninitialized: false
-}));
-
-// === Servir arquivos estáticos da pasta frontend ===
-app.use('/styles', express.static(path.join(__dirname, '../frontend/styles')));
-app.use('/scripts', express.static(path.join(__dirname, '../frontend/scripts')));
-app.use('/images', express.static(path.join(__dirname, '../frontend/images'))); // se usar imagens
-
-// === Rotas de páginas ===
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/login.html'));
-});
-
-app.get('/login.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/login.html'));
-});
-
-app.get('/index.html', (req, res) => {
+// Middleware para verificar autenticação
+function requireAuth(req, res, next) {
   if (!req.session.usuarioId) {
-    return res.redirect('/login.html');
+    return res.status(401).json({ erro: 'Não autorizado' });
   }
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
-});
+  next();
+}
 
-// === Cadastro de usuário ===
-app.post('/register', (req, res) => {
-  const { nome, email, senha } = req.body;
-
-  const senhaCriptografada = bcrypt.hashSync(senha, 10);
-
-  db.run('INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)', [nome, email, senhaCriptografada], (err) => {
+// === Rotas da API para Lançamentos (Novas) ===
+// GET: Lista todos os lançamentos do usuário logado
+app.get('/api/lancamentos', requireAuth, (req, res) => {
+  const usuario_id = req.session.usuarioId;
+  db.all('SELECT * FROM lancamentos WHERE usuario_id = ? ORDER BY data DESC', [usuario_id], (err, rows) => {
     if (err) {
-      console.error(err.message);
-      return res.status(500).json({ erro: 'Erro ao registrar usuário' });
+      return res.status(500).json({ erro: err.message });
     }
-    res.status(200).json({ mensagem: 'Usuário cadastrado com sucesso' });
+    res.json(rows);
   });
 });
 
-// === Login do usuário ===
-app.post('/login', (req, res) => {
-  const { email, senha } = req.body;
-
-  db.get('SELECT * FROM usuarios WHERE email = ?', [email], (err, usuario) => {
+// POST: Adiciona um novo lançamento
+app.post('/api/lancamentos', requireAuth, (req, res) => {
+  const usuario_id = req.session.usuarioId;
+  const { tipo, valor, categoria, descricao, data } = req.body;
+  const sql = 'INSERT INTO lancamentos (usuario_id, tipo, valor, categoria, descricao, data) VALUES (?, ?, ?, ?, ?, ?)';
+  db.run(sql, [usuario_id, tipo, valor, categoria, descricao, data], function(err) {
     if (err) {
-      return res.status(500).json({ erro: 'Erro no login' });
+      return res.status(500).json({ erro: err.message });
     }
-
-    if (!usuario || !bcrypt.compareSync(senha, usuario.senha)) {
-      return res.status(401).json({ erro: 'Credenciais inválidas' });
-    }
-
-    req.session.usuarioId = usuario.id;
-    res.status(200).json({ mensagem: 'Login bem-sucedido' });
+    res.status(201).json({ id: this.lastID, mensagem: 'Lançamento adicionado com sucesso' });
   });
 });
 
-// === Logout ===
-app.post('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/');
-});
-
-// === Iniciar servidor ===
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em: http://localhost:${PORT}`);
+// DELETE: Exclui um lançamento
+app.delete('/api/lancamentos/:id', requireAuth, (req, res) => {
+  const usuario_id = req.session.usuarioId;
+  const lancamento_id = req.params.id;
+  const sql = 'DELETE FROM lancamentos WHERE id = ? AND usuario_id = ?';
+  db.run(sql, [lancamento_id, usuario_id], function(err) {
+    if (err) {
+      return res.status(500).json({ erro: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ erro: 'Lançamento não encontrado ou não pertence a este usuário' });
+    }
+    res.json({ mensagem: 'Lançamento excluído com sucesso' });
+  });
 });
