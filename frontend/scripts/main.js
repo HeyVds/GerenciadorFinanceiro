@@ -1,5 +1,3 @@
-// scripts/main.js
-
 document.addEventListener('DOMContentLoaded', () => {
   const formLancamento = document.getElementById('formLancamento');
   const tipoInput = document.getElementById('tipo');
@@ -19,12 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let graficoPizzaChart;
   let graficoBarrasChart;
-
-  let lancamentos = JSON.parse(localStorage.getItem('lancamentos')) || [];
-
-  function salvarLancamentos() {
-    localStorage.setItem('lancamentos', JSON.stringify(lancamentos));
-  }
+  let lancamentos = []; // Os lançamentos agora vêm do servidor
 
   function formatarMoeda(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -35,17 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalEntradas = 0;
     let totalSaidas = 0;
 
-    lancamentosFiltrados.forEach((lancamento, index) => {
+    lancamentosFiltrados.forEach(lancamento => {
       const li = document.createElement('li');
       li.className = lancamento.tipo === 'entrada' ? 'entrada' : 'saida';
       li.innerHTML = `
         <div>
           <strong>${lancamento.categoria}</strong> - ${lancamento.descricao}<br>
-          <span>${new Date(lancamento.data).toLocaleDateString('pt-BR')}</span>
+          <span>${new Date(lancamento.data + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
         </div>
         <div>
           <span>${formatarMoeda(lancamento.valor)}</span>
-          <button class="excluir-btn" data-index="${index}">Excluir</button>
+          <button class="excluir-btn" data-id="${lancamento.id}">Excluir</button>
         </div>
       `;
       listaLancamentosUl.appendChild(li);
@@ -62,36 +55,37 @@ document.addEventListener('DOMContentLoaded', () => {
   function atualizarGraficos(lancamentosParaGraficos = lancamentos) {
     const categorias = {};
     lancamentosParaGraficos.forEach(lancamento => {
-    const chave = `${lancamento.tipo} - ${lancamento.categoria}`;
-    categorias[chave] = (categorias[chave] || 0) + lancamento.valor;
-});
+      const chave = `${lancamento.tipo} - ${lancamento.categoria}`;
+      categorias[chave] = (categorias[chave] || 0) + lancamento.valor;
+    });
 
     const categoriasLabels = Object.keys(categorias);
     const categoriasData = Object.values(categorias);
 
     if (graficoPizzaChart) graficoPizzaChart.destroy();
-
-    const ctxPizza = document.getElementById('graficoPizza').getContext('2d');
-    graficoPizzaChart = new Chart(ctxPizza, {
-      type: 'pie',
-      data: {
-        labels: categoriasLabels,
-        datasets: [{
-          data: categoriasData,
-          backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40'],
-          hoverBackgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { title: { display: true, text: 'Gastos por Categoria' } }
-      }
-    });
+    if (document.getElementById('graficoPizza')) {
+      const ctxPizza = document.getElementById('graficoPizza').getContext('2d');
+      graficoPizzaChart = new Chart(ctxPizza, {
+        type: 'pie',
+        data: {
+          labels: categoriasLabels,
+          datasets: [{
+            data: categoriasData,
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'Gastos por Categoria' } }
+        }
+      });
+    }
 
     const totaisPorPeriodo = {};
     lancamentosParaGraficos.forEach(lanc => {
       const data = new Date(lanc.data + 'T00:00:00');
-      const mesAno = `${data.getFullYear()}-${(data.getMonth()+1).toString().padStart(2, '0')}`;
+      const mesAno = `${data.getFullYear()}-${(data.getMonth() + 1).toString().padStart(2, '0')}`;
       if (!totaisPorPeriodo[mesAno]) totaisPorPeriodo[mesAno] = { entradas: 0, saidas: 0 };
       if (lanc.tipo === 'entrada') totaisPorPeriodo[mesAno].entradas += lanc.valor;
       else totaisPorPeriodo[mesAno].saidas += lanc.valor;
@@ -102,31 +96,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const saidas = labels.map(l => totaisPorPeriodo[l].saidas);
 
     if (graficoBarrasChart) graficoBarrasChart.destroy();
+    if (document.getElementById('graficoBarras')) {
+      const ctxBarras = document.getElementById('graficoBarras').getContext('2d');
+      graficoBarrasChart = new Chart(ctxBarras, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Entradas', data: entradas, backgroundColor: 'rgba(54,162,235,0.6)', borderColor: 'rgba(54,162,235,1)' },
+            { label: 'Saídas', data: saidas, backgroundColor: 'rgba(255,99,132,0.6)', borderColor: 'rgba(255,99,132,1)' }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { title: { display: true, text: 'Entradas e Saídas por Mês' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+  }
 
-    const ctxBarras = document.getElementById('graficoBarras').getContext('2d');
-    graficoBarrasChart = new Chart(ctxBarras, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Entradas', data: entradas, backgroundColor: 'rgba(54,162,235,0.6)', borderColor: 'rgba(54,162,235,1)' },
-          { label: 'Saídas', data: saidas, backgroundColor: 'rgba(255,99,132,0.6)', borderColor: 'rgba(255,99,132,1)' }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { title: { display: true, text: 'Entradas e Saídas por Mês' } },
-        scales: { y: { beginAtZero: true } }
+  // Função assíncrona para carregar os dados do servidor
+  async function carregarDashboard() {
+    try {
+      const response = await fetch('/api/lancamentos');
+      if (!response.ok) {
+        throw new Error('Falha ao carregar os lançamentos. Talvez a sessão tenha expirado.');
       }
-    });
+      lancamentos = await response.json();
+      renderizarLancamentos();
+      atualizarGraficos();
+    } catch (error) {
+      console.error('Erro:', error);
+      // alert('Erro ao carregar dados: ' + error.message);
+      window.location.href = '/login.html'; // Redireciona para o login em caso de falha
+    }
   }
 
-  function carregarDashboard() {
-    renderizarLancamentos();
-    atualizarGraficos();
-  }
-
-  formLancamento.addEventListener('submit', (e) => {
+  formLancamento.addEventListener('submit', async (e) => {
     e.preventDefault();
     const novo = {
       tipo: tipoInput.value,
@@ -140,18 +147,40 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!novo.categoria) return alert('Insira uma categoria.');
     if (!novo.data) return alert('Selecione uma data.');
 
-    lancamentos.push(novo);
-    salvarLancamentos();
-    carregarDashboard();
-    formLancamento.reset();
+    try {
+      const response = await fetch('/api/lancamentos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(novo)
+      });
+      if (!response.ok) {
+        throw new Error('Falha ao adicionar lançamento');
+      }
+      formLancamento.reset();
+      carregarDashboard(); // Recarrega os dados após adicionar
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao adicionar lançamento.');
+    }
   });
 
-  listaLancamentosUl.addEventListener('click', (e) => {
+  listaLancamentosUl.addEventListener('click', async (e) => {
     if (e.target.classList.contains('excluir-btn')) {
-      const index = e.target.dataset.index;
-      lancamentos.splice(index, 1);
-      salvarLancamentos();
-      carregarDashboard();
+      const id = e.target.dataset.id;
+      if (confirm('Tem certeza que deseja excluir este lançamento?')) {
+        try {
+          const response = await fetch(`/api/lancamentos/${id}`, {
+            method: 'DELETE'
+          });
+          if (!response.ok) {
+            throw new Error('Falha ao excluir lançamento');
+          }
+          carregarDashboard(); // Recarrega os dados após excluir
+        } catch (error) {
+          console.error('Erro:', error);
+          alert('Erro ao excluir lançamento.');
+        }
+      }
     }
   });
 
@@ -176,9 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
     atualizarGraficos(filtrados);
   });
 
-  logoutBtn.addEventListener('click', () => {
-    alert('Você saiu!');
+  // Modifica o logout para ser um POST para a rota do servidor
+  logoutBtn.addEventListener('click', async () => {
+    await fetch('/logout', {
+      method: 'POST'
+    });
+    window.location.href = '/login.html';
   });
 
+  // Carrega os dados na inicialização
   carregarDashboard();
 });
