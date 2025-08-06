@@ -17,8 +17,8 @@ const db = new sqlite3.Database(path.join(dbPath, "banco.db"), (err) => {
   }
 });
 
-// Cria tabela de usuários
 db.serialize(() => {
+  // Cria tabela de usuários
   db.run(
     `
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -40,17 +40,17 @@ db.serialize(() => {
   // Cria tabela de transações
   db.run(
     `
-  CREATE TABLE IF NOT EXISTS transacoes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    tipo TEXT NOT NULL CHECK(tipo IN ('entrada', 'saida')),
-    valor REAL NOT NULL CHECK(valor > 0),
-    categoria TEXT NOT NULL,
-    descricao TEXT,
-    data TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES usuarios(id)
-  )
-`,
+    CREATE TABLE IF NOT EXISTS transacoes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      tipo TEXT NOT NULL CHECK(tipo IN ('entrada', 'saida')),
+      valor REAL NOT NULL CHECK(valor > 0),
+      categoria TEXT NOT NULL,
+      descricao TEXT,
+      data TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES usuarios(id)
+    )
+  `,
     (err) => {
       if (err) {
         console.error("Erro ao criar tabela de transações:", err.message);
