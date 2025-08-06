@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let graficoPizzaChart;
   let graficoBarrasChart;
-  let lancamentos = []; // Os lançamentos agora vêm do servidor
+  let lancamentos = [];
 
   function formatarMoeda(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -116,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Função assíncrona para carregar os dados do servidor
   async function carregarDashboard() {
     try {
       const response = await fetch('/api/lancamentos');
@@ -128,8 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       atualizarGraficos();
     } catch (error) {
       console.error('Erro:', error);
-      // alert('Erro ao carregar dados: ' + error.message);
-      window.location.href = '/login.html'; // Redireciona para o login em caso de falha
+      window.location.href = '/login.html';
     }
   }
 
@@ -147,6 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!novo.categoria) return alert('Insira uma categoria.');
     if (!novo.data) return alert('Selecione uma data.');
 
+    const totalEntradas = lancamentos.filter(l => l.tipo === 'entrada').reduce((acc, l) => acc + l.valor, 0);
+    const totalSaidas = lancamentos.filter(l => l.tipo === 'saida').reduce((acc, l) => acc + l.valor, 0);
+    const saldoAtual = totalEntradas - totalSaidas;
+
+    if (novo.tipo === 'saida' && novo.valor > saldoAtual) {
+      return alert('Saldo insuficiente. Você não pode registrar uma saída maior que o saldo atual.');
+    }
+
     try {
       const response = await fetch('/api/lancamentos', {
         method: 'POST',
@@ -157,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error('Falha ao adicionar lançamento');
       }
       formLancamento.reset();
-      carregarDashboard(); // Recarrega os dados após adicionar
+      carregarDashboard();
     } catch (error) {
       console.error('Erro:', error);
       alert('Erro ao adicionar lançamento.');
@@ -175,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!response.ok) {
             throw new Error('Falha ao excluir lançamento');
           }
-          carregarDashboard(); // Recarrega os dados após excluir
+          carregarDashboard();
         } catch (error) {
           console.error('Erro:', error);
           alert('Erro ao excluir lançamento.');
@@ -205,7 +211,6 @@ document.addEventListener('DOMContentLoaded', () => {
     atualizarGraficos(filtrados);
   });
 
-  // Modifica o logout para ser um POST para a rota do servidor
   logoutBtn.addEventListener('click', async () => {
     await fetch('/logout', {
       method: 'POST'
@@ -213,6 +218,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = '/login.html';
   });
 
-  // Carrega os dados na inicialização
   carregarDashboard();
 });

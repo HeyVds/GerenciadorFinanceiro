@@ -236,6 +236,7 @@ app.post("/api/lancamentos", requireAuth, (req, res) => {
   const usuario_id = req.session.usuarioId;
   const { tipo, valor, categoria, descricao, data } = req.body;
 
+<<<<<<< HEAD
   const sql =
     "INSERT INTO lancamentos (usuario_id, tipo, valor, categoria, descricao, data) VALUES (?, ?, ?, ?, ?, ?)";
   db.run(
@@ -251,6 +252,41 @@ app.post("/api/lancamentos", requireAuth, (req, res) => {
         });
     }
   );
+=======
+  if (!tipo || !valor || !categoria || !descricao || !data) {
+    return res.status(400).json({ erro: 'Preencha todos os campos corretamente.' });
+  }
+
+  // Verifica saldo atual se for saída
+  if (tipo === 'saida') {
+    const sqlSaldo = `
+      SELECT 
+        (SELECT IFNULL(SUM(valor), 0) FROM lancamentos WHERE usuario_id = ? AND tipo = 'entrada') AS total_entradas,
+        (SELECT IFNULL(SUM(valor), 0) FROM lancamentos WHERE usuario_id = ? AND tipo = 'saida') AS total_saidas
+    `;
+    db.get(sqlSaldo, [usuario_id, usuario_id], (err, row) => {
+      if (err) return res.status(500).json({ erro: err.message });
+
+      const saldoAtual = row.total_entradas - row.total_saidas;
+      if (valor > saldoAtual) {
+        return res.status(400).json({ erro: 'Saldo insuficiente para esta saída.' });
+      }
+
+      // Continua inserção se tiver saldo
+      inserirLancamento();
+    });
+  } else {
+    inserirLancamento();
+  }
+
+  function inserirLancamento() {
+    const sql = 'INSERT INTO lancamentos (usuario_id, tipo, valor, categoria, descricao, data) VALUES (?, ?, ?, ?, ?, ?)';
+    db.run(sql, [usuario_id, tipo, valor, categoria, descricao, data], function(err) {
+      if (err) return res.status(500).json({ erro: err.message });
+      res.status(201).json({ id: this.lastID, mensagem: 'Lançamento adicionado com sucesso' });
+    });
+  }
+>>>>>>> f1cfe61b9abcce2648e5e40496585a1f71998d41
 });
 
 app.delete("/api/lancamentos/:id", requireAuth, (req, res) => {
@@ -269,9 +305,14 @@ app.delete("/api/lancamentos/:id", requireAuth, (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 // Rota fallback para login.html (opcional)
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "frontend", "login.html"));
+=======
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
+>>>>>>> f1cfe61b9abcce2648e5e40496585a1f71998d41
 });
 
 // Inicia o servidor
